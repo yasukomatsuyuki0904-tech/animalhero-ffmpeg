@@ -31,10 +31,11 @@ def main():
         '-i', 'input_audio.mp3',
         '-ss', audio_start,
         '-t', '6',
-        '-map', '0:v',
-        '-map', '1:a',
-        '-shortest',
+        '-map', '0:v:0',
+        '-map', '1:a:0',
         '-c:v', 'copy',
+        '-c:a', 'aac',
+        '-shortest',
         output_name
     ]
     subprocess.run(cmd, check=True)
