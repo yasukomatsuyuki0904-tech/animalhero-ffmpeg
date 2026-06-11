@@ -1,6 +1,4 @@
 import os
-print(f"Video size: {os.path.getsize('input_video.mp4')} bytes")
-print(f"Audio size: {os.path.getsize('input_audio.mp3')} bytes")
 import sys
 import requests
 import subprocess
@@ -25,7 +23,8 @@ def main():
 
     print(f"Downloading audio from {audio_url}")
     download_file(audio_url, 'input_audio.mp3')
-
+    print(f"Video size: {os.path.getsize('input_video.mp4')} bytes")
+    print(f"Audio size: {os.path.getsize('input_audio.mp3')} bytes")
     print("Merging video and audio...")
     cmd = [
         'ffmpeg', '-y',
