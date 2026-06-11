@@ -27,17 +27,15 @@ def main():
     print(f"Audio size: {os.path.getsize('input_audio.mp3')} bytes")
     print("Merging video and audio...")
     cmd = [
-        'ffmpeg', '-y',
-        '-i', 'input_video.mp4',
-        '-i', 'input_audio.mp3',
-        '-ss', audio_start,
-        '-t', '6',
-        '-map', '0:v:0',
-        '-map', '1:a:0',
-        '-c:v', 'copy',
-        '-c:a', 'aac',
-        '-shortest',
-        output_name
+        "ffmpeg", "-y",
+        "-i", "input_video.mp4",
+        "-i", "input_audio.mp3",
+        "-map", "0:v",      # ← 抓 input 0 的任何 video stream
+        "-map", "1:a",      # ← 抓 input 1 的任何 audio stream
+        "-c:v", "copy",
+        "-c:a", "aac",
+        "-shortest",
+        "output.mp4"
     ]
     subprocess.run(cmd, check=True)
     print(f"Done: {output_name}")
