@@ -1,1 +1,41 @@
+name: Merge Video Audio
 
+on:
+  workflow_dispatch:
+    inputs:
+      video_url:
+        description: 'Video URL'
+        required: true
+      audio_url:
+        description: 'Audio URL'
+        required: true
+      audio_start:
+        description: 'Audio start second'
+        required: false
+        default: '0'
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install FFmpeg
+        run: sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Run merge script
+        env:
+          VIDEO_URL: ${{ github.event.inputs.video_url }}
+          AUDIO_URL: ${{ github.event.inputs.audio_url }}
+          AUDIO_START: ${{ github.event.inputs.audio_start }}
+          OUTPUT_NAME: output.mp4
+        run: python merge.py
+
+      - name: Upload output
+        uses: actions/upload-artifact@v3
+        with:
+          name: merged-video
+          path: output.mp4
