@@ -35,7 +35,7 @@ jobs:
         run: python merge.py
 
       - name: Upload output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: merged-video
           path: output.mp4
