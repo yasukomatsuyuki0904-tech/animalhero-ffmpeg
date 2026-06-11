@@ -4,14 +4,9 @@ import requests
 import subprocess
 
 def download_file(url, output_path):
+    headers = {'User-Agent': 'Mozilla/5.0'}
     session = requests.Session()
-    r = session.get(url, stream=True, allow_redirects=True)
-    # 處理 Google Drive 確認頁面
-    for key, value in r.cookies.items():
-        if key.startswith('download_warning'):
-            params = {'confirm': value}
-            r = session.get(url, params=params, stream=True)
-            break
+    r = session.get(url, stream=True, allow_redirects=True, headers=headers)
     with open(output_path, 'wb') as f:
         for chunk in r.iter_content(chunk_size=8192):
             if chunk:
