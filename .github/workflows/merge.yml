@@ -41,3 +41,4 @@ jobs:
         with:
           name: merged-video
           path: output.mp4
+          archive: false
