@@ -12,6 +12,9 @@ on:
       video_url_3:
         description: 'Video URL - Shot 3'
         required: true
+      webhook_url:
+        description: 'Make.com Webhook URL to notify on completion'
+        required: true
 
 jobs:
   merge:
@@ -29,9 +32,10 @@ jobs:
 
       - name: Run merge script
         env:
-          VIDEO_URL_1: ${{ github.event.inputs.video_url_1 }}
-          VIDEO_URL_2: ${{ github.event.inputs.video_url_2 }}
-          VIDEO_URL_3: ${{ github.event.inputs.video_url_3 }}
+          VIDEO_URL_1:  ${{ github.event.inputs.video_url_1 }}
+          VIDEO_URL_2:  ${{ github.event.inputs.video_url_2 }}
+          VIDEO_URL_3:  ${{ github.event.inputs.video_url_3 }}
+          WEBHOOK_URL:  ${{ github.event.inputs.webhook_url }}
         run: python merge.py
 
       - name: Upload output
