@@ -3,16 +3,15 @@ name: Merge Video Audio
 on:
   workflow_dispatch:
     inputs:
-      video_url:
-        description: 'Video URL'
+      video_url_1:
+        description: 'Video URL - Shot 1'
         required: true
-      audio_url:
-        description: 'Audio URL'
+      video_url_2:
+        description: 'Video URL - Shot 2'
         required: true
-      audio_start:
-        description: 'Audio start second'
-        required: false
-        default: '0'
+      video_url_3:
+        description: 'Video URL - Shot 3'
+        required: true
 
 jobs:
   merge:
@@ -30,10 +29,9 @@ jobs:
 
       - name: Run merge script
         env:
-          VIDEO_URL: ${{ github.event.inputs.video_url }}
-          AUDIO_URL: ${{ github.event.inputs.audio_url }}
-          AUDIO_START: ${{ github.event.inputs.audio_start }}
-          OUTPUT_NAME: output.mp4
+          VIDEO_URL_1: ${{ github.event.inputs.video_url_1 }}
+          VIDEO_URL_2: ${{ github.event.inputs.video_url_2 }}
+          VIDEO_URL_3: ${{ github.event.inputs.video_url_3 }}
         run: python merge.py
 
       - name: Upload output
