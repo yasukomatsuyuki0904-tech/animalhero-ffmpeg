@@ -1,19 +1,23 @@
-name: Merge Video Audio
+name: Merge Videos
 
 on:
   workflow_dispatch:
     inputs:
       video_url_1:
-        description: 'Video URL - Shot 1'
+        description: 'Video URL 1'
         required: true
       video_url_2:
-        description: 'Video URL - Shot 2'
+        description: 'Video URL 2'
         required: true
       video_url_3:
-        description: 'Video URL - Shot 3'
+        description: 'Video URL 3'
         required: true
+      mood:
+        description: 'BGM mood (tension or warm)'
+        required: true
+        default: 'tension'
       webhook_url:
-        description: 'Make.com Webhook URL to notify on completion'
+        description: 'Webhook URL to notify when done'
         required: true
 
 jobs:
@@ -21,24 +25,30 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Install FFmpeg
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --fix-missing ffmpeg
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Install Python dependencies
+      - name: Install dependencies
         run: pip install requests
 
-      - name: Run merge script
+      - name: Install ffmpeg
+        run: sudo apt-get install -y ffmpeg
+
+      - name: Run merge.py
         env:
-          VIDEO_URL_1: ${{ github.event.inputs.video_url_1 }}
-          VIDEO_URL_2: ${{ github.event.inputs.video_url_2 }}
-          VIDEO_URL_3: ${{ github.event.inputs.video_url_3 }}
-          WEBHOOK_URL: ${{ github.event.inputs.webhook_url }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
+          VIDEO_URL_1:        ${{ github.event.inputs.video_url_1 }}
+          VIDEO_URL_2:        ${{ github.event.inputs.video_url_2 }}
+          VIDEO_URL_3:        ${{ github.event.inputs.video_url_3 }}
+          MOOD:               ${{ github.event.inputs.mood }}
+          WEBHOOK_URL:        ${{ github.event.inputs.webhook_url }}
+          GITHUB_TOKEN:       ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY:  ${{ github.repository }}
+          GITHUB_RUN_ID:      ${{ github.run_id }}
         run: python merge.py
