@@ -19,6 +19,22 @@ WARM_BGM = [
     {"file": "Gaiety in the Golden Age - Aaron Kenny.mp3",      "start": "00:01:44", "duration": "5"},
 ]
 
+# warm mood 時需要10秒版本的 warm BGM 當主軌
+WARM_BGM_LONG = [
+    {"file": "Alpine Bierhalle - Aaron Kenny.mp3",              "start": "00:00:11", "duration": "10"},
+    {"file": "Everything Has a Beginning - Joel Cummins.mp3",   "start": "00:00:00", "duration": "10"},
+    {"file": "Fiesta de la Vida - Aaron Kenny.mp3",             "start": "00:01:24", "duration": "10"},
+    {"file": "Gaiety in the Golden Age - Aaron Kenny.mp3",      "start": "00:01:44", "duration": "10"},
+]
+
+# tension mood 時需要5秒版本的 tension BGM 當副軌
+TENSION_BGM_SHORT = [
+    {"file": "Duty Calls - Rod Kim.mp3",                        "start": "00:00:00", "duration": "5"},
+    {"file": "Frodo's Quest - Ezra Lipp.mp3",                   "start": "00:00:00", "duration": "5"},
+    {"file": "The Marble Cinematic University - Ezra Lipp.mp3", "start": "00:01:07", "duration": "5"},
+    {"file": "The Road To Mordor - Ezra Lipp.mp3",              "start": "00:00:07", "duration": "5"},
+]
+
 
 def download_file(url, output_path):
     headers = {'User-Agent': 'Mozilla/5.0'}
@@ -83,14 +99,22 @@ def main():
     video_url_2  = os.environ['VIDEO_URL_2']
     video_url_3  = os.environ['VIDEO_URL_3']
     webhook_url  = os.environ['WEBHOOK_URL']
+    mood         = os.environ.get('MOOD', 'tension')
     run_id       = os.environ['GITHUB_RUN_ID']
     token        = os.environ['GITHUB_TOKEN']
     repo         = os.environ['GITHUB_REPOSITORY']
 
-    tension = random.choice(TENSION_BGM)
-    warm    = random.choice(WARM_BGM)
-    print(f"Tension BGM: {tension['file']}")
-    print(f"Warm BGM:    {warm['file']}")
+    # 根據 mood 決定主軌（10秒）和副軌（5秒）
+    if mood == 'warm':
+        bgm_main = random.choice(WARM_BGM_LONG)   # warm 10秒 主軌
+        bgm_sub  = random.choice(TENSION_BGM_SHORT) # tension 5秒 副軌
+    else:
+        bgm_main = random.choice(TENSION_BGM)      # tension 10秒 主軌
+        bgm_sub  = random.choice(WARM_BGM)         # warm 5秒 副軌
+
+    print(f"Mood:     {mood}")
+    print(f"Main BGM: {bgm_main['file']} ({bgm_main['duration']}s)")
+    print(f"Sub BGM:  {bgm_sub['file']} ({bgm_sub['duration']}s)")
 
     # 下載三段影片
     for i, url in enumerate([video_url_1, video_url_2, video_url_3], 1):
@@ -98,10 +122,10 @@ def main():
         download_file(url, f"input_video_{i}.mp4")
 
     # 下載 BGM
-    tension_url = f"{GITHUB_RAW}/{requests.utils.quote(tension['file'])}"
-    warm_url    = f"{GITHUB_RAW}/{requests.utils.quote(warm['file'])}"
-    download_file(tension_url, "tension.mp3")
-    download_file(warm_url,    "warm.mp3")
+    main_url = f"{GITHUB_RAW}/{requests.utils.quote(bgm_main['file'])}"
+    sub_url  = f"{GITHUB_RAW}/{requests.utils.quote(bgm_sub['file'])}"
+    download_file(main_url, "bgm_main.mp3")
+    download_file(sub_url,  "bgm_sub.mp3")
 
     # Step 1: 串接三段影片
     with open("concat_list.txt", 'w') as f:
@@ -110,18 +134,18 @@ def main():
     subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0",
                     "-i", "concat_list.txt", "-c", "copy", "merged_video.mp4"], check=True)
 
-    # Step 2: 裁切 tension BGM（10秒）
-    subprocess.run(["ffmpeg", "-y", "-ss", tension["start"], "-t", tension["duration"],
-                    "-i", "tension.mp3", "-c:a", "aac", "-b:a", "128k", "tension_trim.aac"], check=True)
+    # Step 2: 裁切主軌 BGM（10秒）
+    subprocess.run(["ffmpeg", "-y", "-ss", bgm_main["start"], "-t", bgm_main["duration"],
+                    "-i", "bgm_main.mp3", "-c:a", "aac", "-b:a", "128k", "main_trim.aac"], check=True)
 
-    # Step 3: 裁切 warm BGM（5秒）
-    subprocess.run(["ffmpeg", "-y", "-ss", warm["start"], "-t", warm["duration"],
-                    "-i", "warm.mp3", "-c:a", "aac", "-b:a", "128k", "warm_trim.aac"], check=True)
+    # Step 3: 裁切副軌 BGM（5秒）
+    subprocess.run(["ffmpeg", "-y", "-ss", bgm_sub["start"], "-t", bgm_sub["duration"],
+                    "-i", "bgm_sub.mp3", "-c:a", "aac", "-b:a", "128k", "sub_trim.aac"], check=True)
 
-    # Step 4: 拼接 BGM
+    # Step 4: 拼接 BGM（主軌 + 副軌）
     with open("bgm_list.txt", 'w') as f:
-        f.write("file 'tension_trim.aac'\n")
-        f.write("file 'warm_trim.aac'\n")
+        f.write("file 'main_trim.aac'\n")
+        f.write("file 'sub_trim.aac'\n")
     subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0",
                     "-i", "bgm_list.txt", "-c", "copy", "full_bgm.aac"], check=True)
 
