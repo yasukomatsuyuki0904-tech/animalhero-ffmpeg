@@ -19,6 +19,8 @@ on:
 jobs:
   merge:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
 
@@ -32,14 +34,11 @@ jobs:
 
       - name: Run merge script
         env:
-          VIDEO_URL_1:  ${{ github.event.inputs.video_url_1 }}
-          VIDEO_URL_2:  ${{ github.event.inputs.video_url_2 }}
-          VIDEO_URL_3:  ${{ github.event.inputs.video_url_3 }}
-          WEBHOOK_URL:  ${{ github.event.inputs.webhook_url }}
+          VIDEO_URL_1: ${{ github.event.inputs.video_url_1 }}
+          VIDEO_URL_2: ${{ github.event.inputs.video_url_2 }}
+          VIDEO_URL_3: ${{ github.event.inputs.video_url_3 }}
+          WEBHOOK_URL: ${{ github.event.inputs.webhook_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: python merge.py
-
-      - name: Upload output
-        uses: actions/upload-artifact@v4
-        with:
-          name: output-video
-          path: output.mp4
